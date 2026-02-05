@@ -37,27 +37,48 @@ namespace SudokuSolver
             return true;
         }
 
-        private bool FindEmptyCell(SudokuBoard board, out int row, out int col)
+        private bool FindBestEmptyCell(SudokuBoard board, out int bestRow, out int bestCol)
         {
-            for (row = 0; row < 9; row++)
+            bestRow = -1;
+            bestCol = -1;
+            int bestCount = 10;
+
+            for (int row = 0; row < 9; row++)
             {
-                for (col = 0; col < 9; col++)
+                for (int col = 0; col < 9; col++)
                 {
-                    if (board.IsEmpty(row, col))
-                        return true;
+                    if (!board.IsEmpty(row, col))
+                        continue;
+
+                    int count = 0;
+                    for (int num = 1; num <= 9; num++)
+                    {
+                        if (IsSafe(board, row, col, num))
+                            count++;
+                    }
+
+                    if (count < bestCount)
+                    {
+                        bestCount = count;
+                        bestRow = row;
+                        bestCol = col;
+
+                        if (count == 1)
+                            return true;
+                    }
                 }
             }
 
-            row = -1;
-            col = -1;
-            return false;
+            return bestRow != -1;
         }
+
         public bool Solve(SudokuBoard board)
         {
             int row, col;
 
-            if (!FindEmptyCell(board, out row, out col))
+            if (!FindBestEmptyCell(board, out row, out col))
                 return true;
+
 
             for (int num = 1; num <= 9; num++)
             {
