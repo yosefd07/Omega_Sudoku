@@ -6,6 +6,7 @@ namespace SudokuSolver
     {
         static void Main(string[] args)
         {
+            BoardPrinter boardPrinter = new BoardPrinter();
             SudokuParser parser = new SudokuParser();
             SudokuValidator validator = new SudokuValidator();
             SudokuSolver solver = new SudokuSolver();
@@ -30,6 +31,12 @@ namespace SudokuSolver
                         Console.WriteLine("Board is invalid.");
                         continue;
                     }
+                    Console.WriteLine("Original board:");
+                    boardPrinter.PrintBoard(board);
+
+                    Console.WriteLine();
+                    Console.WriteLine("================================");
+                    Console.WriteLine();
 
                     bool solved = solver.Solve(board);
 
@@ -40,7 +47,8 @@ namespace SudokuSolver
                     }
 
                     Console.WriteLine("Solved board:");
-                    PrintBoard(board);
+                    boardPrinter.PrintBoard(board);
+
                 }
                 catch (Exception ex)
                 {
@@ -48,3 +56,5 @@ namespace SudokuSolver
                 }
             }
         }
+    }
+}
