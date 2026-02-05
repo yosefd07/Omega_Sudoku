@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
+
 
 namespace SudokuSolver
 {
@@ -15,6 +17,10 @@ namespace SudokuSolver
             {
                 Console.WriteLine("Enter sudoku string (81 chars) or 'exit':");
                 string input = Console.ReadLine();
+
+
+                Stopwatch sw = Stopwatch.StartNew();
+
 
                 if (input == null)
                     continue;
@@ -54,6 +60,11 @@ namespace SudokuSolver
                 {
                     Console.WriteLine($"Error: {ex.Message}");
                 }
+
+                Console.WriteLine();
+                sw.Stop();
+                Console.WriteLine($"{sw.Elapsed.TotalSeconds} sec");
+                Console.WriteLine();
             }
         }
     }
