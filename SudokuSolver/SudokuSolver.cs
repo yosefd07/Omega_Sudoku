@@ -1,129 +1,167 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace SudokuSolver
 {
-    internal class SudokuSolver
+    public class GenericSudokuSolver
     {
+        private int _size;         
+        private int _boxSize;      
+        private int _totalCells;   
+        private int _fullMask;      
 
-        private bool[,] _rows = new bool[9, 10];
-        private bool[,] _cols = new bool[9, 10];
-        private bool[,] _boxes = new bool[9, 10];
-        private int[,] _board = new int[9, 9];
+      
+        private int[] _rows;
+        private int[] _cols;
+        private int[] _boxes;
+        private int[] _boardFlat;
+        private int[] _cellToBox;
+        private int[] _maskToValue; 
 
-        public bool Solve(SudokuBoard boardInput)
+        public GenericSudokuSolver(int size)
         {
+            _size = size;
+            _boxSize = (int)Math.Sqrt(size);
 
-            Initialize(boardInput);
+            if (_boxSize * _boxSize != size)
+                throw new ArgumentException("Size must be a perfect square (4, 9, 16, 25)");
 
+            _totalCells = size * size;
+
+            _fullMask = (1 << (_size + 1)) - 2;
+
+            InitializeMemory();
+        }
+
+        private void InitializeMemory()
+        {
+            _rows = new int[_size];
+            _cols = new int[_size];
+            _boxes = new int[_size];
+            _boardFlat = new int[_totalCells];
+            _cellToBox = new int[_totalCells];
+
+            for (int i = 0; i < _totalCells; i++)
+            {
+                int r = i / _size;
+                int c = i % _size;
+                _cellToBox[i] = (r / _boxSize) * _boxSize + (c / _boxSize);
+            }
+
+            int arraySize = 1 << (_size + 1);
+            _maskToValue = new int[arraySize];
+            for (int i = 1; i <= _size; i++)
+            {
+                _maskToValue[1 << i] = i;
+            }
+        }
+
+        public bool Solve(int[] inputBoard)
+        {
+            if (inputBoard.Length != _totalCells)
+                throw new ArgumentException($"Board must have {_totalCells} cells");
+
+            Array.Clear(_rows, 0, _size);
+            Array.Clear(_cols, 0, _size);
+            Array.Clear(_boxes, 0, _size);
+
+            for (int i = 0; i < _totalCells; i++)
+            {
+                int val = inputBoard[i];
+                _boardFlat[i] = val;
+
+                if (val != 0)
+                {
+                    int r = i / _size;
+                    int c = i % _size;
+                    int b = _cellToBox[i];
+                    int mask = 1 << val;
+
+
+                    if ((_rows[r] & mask) != 0 || (_cols[c] & mask) != 0 || (_boxes[b] & mask) != 0)
+                        return false; 
+
+                    _rows[r] |= mask;
+                    _cols[c] |= mask;
+                    _boxes[b] |= mask;
+                }
+            }
 
             if (SolveRecursive())
             {
-
-                for (int r = 0; r < 9; r++)
-                    for (int c = 0; c < 9; c++)
-                        boardInput.SetCell(r, c, _board[r, c]);
+                Array.Copy(_boardFlat, inputBoard, _totalCells);
                 return true;
             }
 
             return false;
         }
 
-        private void Initialize(SudokuBoard boardInput)
-        {
-            Array.Clear(_rows, 0, _rows.Length);
-            Array.Clear(_cols, 0, _cols.Length);
-            Array.Clear(_boxes, 0, _boxes.Length);
-
-            for (int r = 0; r < 9; r++)
-            {
-                for (int c = 0; c < 9; c++)
-                {
-                    int val = boardInput.GetCell(r, c);
-                    _board[r, c] = val;
-                    if (val != 0)
-                    {
-                        Mark(r, c, val, true);
-                    }
-                }
-            }
-        }
-
-        private void Mark(int r, int c, int val, bool state)
-        {
-            int boxIdx = (r / 3) * 3 + (c / 3);
-            _rows[r, val] = state;
-            _cols[c, val] = state;
-            _boxes[boxIdx, val] = state;
-        }
-
-        private bool IsSafe(int r, int c, int val)
-        {
-            int boxIdx = (r / 3) * 3 + (c / 3);
-            
-            return !_rows[r, val] && !_cols[c, val] && !_boxes[boxIdx, val];
-        }
-
         private bool SolveRecursive()
         {
-            int bestRow = -1;
-            int bestCol = -1;
-            int minOptions = 10; 
+            int bestIdx = -1;
+            int minOptions = _size + 1;
+            int bestMask = 0;
 
-            bool foundEmpty = false;
-
-            for (int r = 0; r < 9; r++)
+            for (int i = 0; i < _totalCells; i++)
             {
-                for (int c = 0; c < 9; c++)
+                if (_boardFlat[i] != 0) continue;
+
+                int r = i / _size;
+                int c = i % _size;
+                int b = _cellToBox[i];
+
+                int forbidden = _rows[r] | _cols[c] | _boxes[b];
+                int allowed = ~forbidden & _fullMask; 
+
+                if (allowed == 0) return false;
+
+                int count = CountSetBits(allowed);
+
+                if (count < minOptions)
                 {
-                    if (_board[r, c] != 0) continue;
-
-                    foundEmpty = true;
-                    int options = CountOptions(r, c);
-
-                    if (options == 0) return false; 
-
-                    if (options < minOptions)
-                    {
-                        minOptions = options;
-                        bestRow = r;
-                        bestCol = c;
-                        if (minOptions == 1) goto OptimizationFound; 
-                    }
+                    minOptions = count;
+                    bestIdx = i;
+                    bestMask = allowed;
+                    if (count == 1) break;
                 }
             }
 
-            if (!foundEmpty) return true;
+            if (bestIdx == -1) return true;
 
-            OptimizationFound:
+            int row = bestIdx / _size;
+            int col = bestIdx % _size;
+            int box = _cellToBox[bestIdx];
 
-            for (int num = 1; num <= 9; num++)
+            int options = bestMask;
+            while (options > 0)
             {
-                if (IsSafe(bestRow, bestCol, num))
-                {
+                int bit = options & (-options);
+                options ^= bit;
 
-                    _board[bestRow, bestCol] = num;
-                    Mark(bestRow, bestCol, num, true);
+                int num = _maskToValue[bit];
 
-                    if (SolveRecursive()) return true;
+                _boardFlat[bestIdx] = num;
+                _rows[row] |= bit;
+                _cols[col] |= bit;
+                _boxes[box] |= bit;
 
-                    Mark(bestRow, bestCol, num, false);
-                    _board[bestRow, bestCol] = 0;
-                }
+                if (SolveRecursive()) return true;
+
+                _boardFlat[bestIdx] = 0;
+                _rows[row] &= ~bit;
+                _cols[col] &= ~bit;
+                _boxes[box] &= ~bit;
             }
 
             return false;
         }
 
-        private int CountOptions(int r, int c)
+        private int CountSetBits(int n)
         {
             int count = 0;
-            int boxIdx = (r / 3) * 3 + (c / 3);
-
-            for (int val = 1; val <= 9; val++)
+            while (n > 0)
             {
-                if (!_rows[r, val] && !_cols[c, val] && !_boxes[boxIdx, val])
-                    count++;
+                n &= (n - 1);
+                count++;
             }
             return count;
         }
