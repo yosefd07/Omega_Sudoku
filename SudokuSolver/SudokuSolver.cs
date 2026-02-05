@@ -8,34 +8,36 @@ namespace SudokuSolver
 {
     internal class SudokuSolver
     {
-        private bool IsSafe(SudokuBoard board, int row, int col, int num)
+        private bool[,] rows = new bool[9, 10];
+        private bool[,] cols = new bool[9, 10];
+        private bool[,] boxes = new bool[9, 10];
+        private void InitializeCache(SudokuBoard board)
         {
-            for (int c = 0; c < 9; c++)
+            for (int row = 0; row < 9; row++)
             {
-                if (board.GetCell(row, c) == num)
-                    return false;
-            }
-
-            for (int r = 0; r < 9; r++)
-            {
-                if (board.GetCell(r, col) == num)
-                    return false;
-            }
-
-            int startRow = (row / 3) * 3;
-            int startCol = (col / 3) * 3;
-
-            for (int r = startRow; r < startRow + 3; r++)
-            {
-                for (int c = startCol; c < startCol + 3; c++)
+                for (int col = 0; col < 9; col++)
                 {
-                    if (board.GetCell(r, c) == num)
-                        return false;
+                    int value = board.GetCell(row, col);
+                    if (value != 0)
+                    {
+                        rows[row, value] = true;
+                        cols[col, value] = true;
+
+                        int box = (row / 3) * 3 + col / 3;
+                        boxes[box, value] = true;
+                    }
                 }
             }
-
-            return true;
         }
+
+        private bool IsSafe(int row, int col, int num)
+        {
+            int box = (row / 3) * 3 + col / 3;
+            return !rows[row, num]
+                && !cols[col, num]
+                && !boxes[box, num];
+        }
+
 
         private bool FindBestEmptyCell(SudokuBoard board, out int bestRow, out int bestCol)
         {
@@ -53,7 +55,7 @@ namespace SudokuSolver
                     int count = 0;
                     for (int num = 1; num <= 9; num++)
                     {
-                        if (IsSafe(board, row, col, num))
+                        if (IsSafe( row, col, num))
                             count++;
                     }
 
@@ -74,6 +76,13 @@ namespace SudokuSolver
 
         public bool Solve(SudokuBoard board)
         {
+            InitializeCache(board);
+            return SolveInternal(board);
+        }
+
+        private bool SolveInternal(SudokuBoard board)
+
+        {
             int row, col;
 
             if (!FindBestEmptyCell(board, out row, out col))
@@ -82,14 +91,23 @@ namespace SudokuSolver
 
             for (int num = 1; num <= 9; num++)
             {
-                if (IsSafe(board, row, col, num))
+                if (IsSafe( row, col, num))
                 {
                     board.SetCell(row, col, num);
+                    rows[row, num] = true;
+                    cols[col, num] = true;
+                    boxes[(row / 3) * 3 + col / 3, num] = true;
 
-                    if (Solve(board))
+
+                    if (SolveInternal(board))
                         return true;
 
+
                     board.SetCell(row, col, 0);
+                    rows[row, num] = false;
+                    cols[col, num] = false;
+                    boxes[(row / 3) * 3 + col / 3, num] = false;
+
                 }
             }
 
