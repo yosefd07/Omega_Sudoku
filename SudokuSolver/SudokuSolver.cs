@@ -13,6 +13,10 @@ namespace SudokuSolver
         private bool[,] boxes = new bool[9, 10];
         private void InitializeCache(SudokuBoard board)
         {
+            Array.Clear(rows, 0, rows.Length);
+            Array.Clear(cols, 0, cols.Length);
+            Array.Clear(boxes, 0, boxes.Length);
+
             for (int row = 0; row < 9; row++)
             {
                 for (int col = 0; col < 9; col++)
@@ -38,12 +42,12 @@ namespace SudokuSolver
                 && !boxes[box, num];
         }
 
-
         private bool FindBestEmptyCell(SudokuBoard board, out int bestRow, out int bestCol)
         {
             bestRow = -1;
             bestCol = -1;
             int bestCount = 10;
+            bool hasEmpty = false;
 
             for (int row = 0; row < 9; row++)
             {
@@ -52,11 +56,25 @@ namespace SudokuSolver
                     if (!board.IsEmpty(row, col))
                         continue;
 
+                    hasEmpty = true;
+
                     int count = 0;
                     for (int num = 1; num <= 9; num++)
                     {
-                        if (IsSafe( row, col, num))
+                        if (IsSafe(row, col, num))
+                        {
                             count++;
+                            // אופטימיזציה: אם מצאנו יותר מ-1, זה כבר לא "Dead End", לא חייבים להמשיך לספור
+                            if (count > bestCount)
+                                break;
+                        }
+                    }
+
+                    if (count == 0)
+                    {
+                        bestRow = row;
+                        bestCol = col;
+                        return true;
                     }
 
                     if (count < bestCount)
@@ -71,7 +89,7 @@ namespace SudokuSolver
                 }
             }
 
-            return bestRow != -1;
+            return hasEmpty;
         }
 
         public bool Solve(SudokuBoard board)
@@ -81,38 +99,41 @@ namespace SudokuSolver
         }
 
         private bool SolveInternal(SudokuBoard board)
-
         {
             int row, col;
 
-            if (!FindBestEmptyCell(board, out row, out col))
+            bool found = FindBestEmptyCell(board, out row, out col);
+
+            // אין תאים ריקים → פתרון מלא
+            if (!found && row == -1)
                 return true;
 
+            // Dead end
+            if (!found)
+                return false;
 
             for (int num = 1; num <= 9; num++)
             {
-                if (IsSafe( row, col, num))
+                if (IsSafe(row, col, num))
                 {
                     board.SetCell(row, col, num);
                     rows[row, num] = true;
                     cols[col, num] = true;
                     boxes[(row / 3) * 3 + col / 3, num] = true;
 
-
                     if (SolveInternal(board))
                         return true;
-
 
                     board.SetCell(row, col, 0);
                     rows[row, num] = false;
                     cols[col, num] = false;
                     boxes[(row / 3) * 3 + col / 3, num] = false;
-
                 }
             }
 
             return false;
         }
     }
-}
+
+    }
 

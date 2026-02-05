@@ -52,27 +52,26 @@ namespace SudokuSolver
         }
         public bool BoxCheck(SudokuBoard board)
         {
-            for (int boxCol = 0; boxCol < 3; boxCol++)
+            for (int boxRow = 0; boxRow < 3; boxRow++)
             {
-
-                for (int boxRow = 0; boxRow < 3; boxRow++)
+                for (int boxCol = 0; boxCol < 3; boxCol++)
                 {
                     int startRow = boxRow * 3;
                     int startCol = boxCol * 3;
-
                     bool[] seen = new bool[10];
-                    for (int col = startCol; startCol + col < 3; col++)
+
+                    for (int i = 0; i < 3; i++)
                     {
-
-                        for (int row = startRow; startRow +  row < 3; row++)
+                        for (int j = 0; j < 3; j++)
                         {
+                            int row = startRow + i;
+                            int col = startCol + j;
+
                             int value = board.GetCell(row, col);
-                            if (value == 0)
-                                continue;
+                            if (value == 0) continue;
 
-                            if (seen[value])
-                                return false;
-
+                            if (seen[value]) return false;
+                            seen[value] = true;
                         }
                     }
                 }
