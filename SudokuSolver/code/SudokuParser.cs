@@ -15,9 +15,8 @@ namespace SudokuSolver
         {
             /// Parses a string input and creates a SudokuBoard from it.
             /// Each character in the string represents a cell in the board.
-            /// Digits ('1'–'9') are converted to their numeric values,
-            /// while any other character is treated as an empty cell (0).
-            /// Return the sudoko board
+            /// Digits ('1'–'9') are converted to their numeric values,.
+            /// Returns the sudoko board
 
             SudokuBoard board = new SudokuBoard(_size);
 
@@ -29,10 +28,16 @@ namespace SudokuSolver
                 if (c >= '1' && c <= '9')
                 {
                     value = c - '0';
+                    if (value > _size)
+                        throw new ArgumentException($"Invalid digit '{c}' for board size {_size}");
+                }
+                else if (c == '.' || c == '0')
+                {
+                    value = 0; 
                 }
                 else
                 {
-                    value = 0;
+                    throw new ArgumentException($"Invalid character '{c}' in input");
                 }
 
                 if (value > _size) value = 0;

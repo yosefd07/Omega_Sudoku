@@ -1,14 +1,16 @@
-.gradle/ 
-build/ 
-*.iml 
-.idea/ 
-*.user 
-*.suo 
-*.vs/ 
-.gradle/ 
-build/ 
-*.iml 
-.idea/ 
-*.user 
-*.suo 
-*.vs/ 
+# Visual Studio Build folders (CRITICAL)
+bin/
+obj/
+
+# Visual Studio temporary files
+.vs/
+*.user
+*.suo
+
+# Executables and build artifacts
+*.exe
+*.dll
+*.pdb
+
+# Nuget packages
+packages/
