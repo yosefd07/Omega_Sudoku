@@ -1,33 +1,45 @@
-﻿using Microsoft.SqlServer.Server;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
 
 namespace SudokuSolver
 {
     internal class SudokuBoard
     {
-        public const int ROWS = 9;
-        public const int COLUMNS = 9;
+        public int Size { get; private set; }
+        public int BoxSize { get; private set; }
+        private int[] _grid; 
 
-        int[,] Grid = new int[ROWS, COLUMNS];
-
-        public int GetCell(int x, int y)
+        public SudokuBoard(int size)
         {
-            return Grid[x, y];
+            Size = size;
+            BoxSize = (int)Math.Sqrt(size);
+
+            if (BoxSize * BoxSize != size)
+                throw new ArgumentException("Board size must be a perfect square (4, 9, 16, 25)");
+
+            _grid = new int[size * size];
         }
-        public void SetCell(int x, int y, int value)
+
+        public int GetCell(int row, int col)
         {
-            Grid[x, y] = value;
+            return _grid[row * Size + col];
         }
 
-        public bool IsEmpty(int x, int y)
+        public void SetCell(int row, int col, int value)
         {
-            if (Grid[x, y] == 0)
-                return true;
-            return false;
+            _grid[row * Size + col] = value;
+        }
+
+        public int[] GetFlatArray()
+        {
+            int[] copy = new int[_grid.Length];
+            Array.Copy(_grid, copy, _grid.Length);
+            return copy;
+        }
+
+        public void UpdateFromFlatArray(int[] solvedArray)
+        {
+            if (solvedArray.Length != _grid.Length) throw new ArgumentException("Array size mismatch");
+            Array.Copy(solvedArray, _grid, _grid.Length);
         }
     }
 }

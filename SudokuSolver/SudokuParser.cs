@@ -1,32 +1,38 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SudokuSolver
 {
     internal class SudokuParser
     {
-        public SudokuBoard Parse(string input)
+        private int _size;
+
+        public SudokuParser(int size)
         {
-            if (input == null)
-                throw new ArgumentException("Input cannot be null");
+            _size = size;
+        }
 
-            if (input.Length != 81)
-                throw new ArgumentException("Input must contain exactly 81 characters");
+        public SudokuBoard Parse(string input)
+        { 
+            SudokuBoard board = new SudokuBoard(_size);
 
-            SudokuBoard board = new SudokuBoard();
-
-            for (int i = 0; i < 81; i++)
+            for (int i = 0; i < input.Length; i++)
             {
-                if (input[i] < '0' || input[i] > '9')
-                    throw new ArgumentException("Input contains invalid characters");
+                char c = input[i];
+                int value = 0;
 
-                int row = i / 9;
-                int col = i % 9;
-                int value = input[i] - '0';
+                if (c >= '1' && c <= '9')
+                {
+                    value = c - '0';
+                }
+                else
+                {
+                    value = 0;
+                }
 
+                if (value > _size) value = 0;
+
+                int row = i / _size;
+                int col = i % _size;
                 board.SetCell(row, col, value);
             }
 

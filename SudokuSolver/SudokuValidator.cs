@@ -1,89 +1,58 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SudokuSolver
+﻿namespace SudokuSolver
 {
     internal class SudokuValidator
     {
-        public bool RowCheck(SudokuBoard board)
+        public bool IsValid(SudokuBoard board)
         {
+            int size = board.Size;
+            int boxSize = board.BoxSize;
 
-            for (int row = 0; row < 9; row++)
+            for (int r = 0; r < size; r++)
             {
-                bool[] seen = new bool[10];
-
-                for (int col = 0; col < 9; col++)
+                bool[] seen = new bool[size + 1];
+                for (int c = 0; c < size; c++)
                 {
-                    int value = board.GetCell(row, col);
-                    if (value == 0)
-                        continue;
-
-                    if (seen[value])
-                        return false;
-
-                    seen[value] = true;
+                    int val = board.GetCell(r, c);
+                    if (val == 0) continue;
+                    if (seen[val]) return false;
+                    seen[val] = true;
                 }
             }
-            return true;
-        }
-            public bool ColumnCheck(SudokuBoard board)
-        {
 
-            for (int col = 0; col < 9; col++)
+            for (int c = 0; c < size; c++)
             {
-                bool[] seen = new bool[10];
-
-                for (int row = 0; row < 9; row++)
+                bool[] seen = new bool[size + 1];
+                for (int r = 0; r < size; r++)
                 {
-                    int value = board.GetCell(row, col);
-                    if (value == 0)
-                        continue;
-
-                    if (seen[value])
-                        return false;
-
-                    seen[value] = true;
+                    int val = board.GetCell(r, c);
+                    if (val == 0) continue;
+                    if (seen[val]) return false;
+                    seen[val] = true;
                 }
             }
-            return true;
-        }
-        public bool BoxCheck(SudokuBoard board)
-        {
-            for (int boxRow = 0; boxRow < 3; boxRow++)
-            {
-                for (int boxCol = 0; boxCol < 3; boxCol++)
-                {
-                    int startRow = boxRow * 3;
-                    int startCol = boxCol * 3;
-                    bool[] seen = new bool[10];
 
-                    for (int i = 0; i < 3; i++)
+            for (int boxRow = 0; boxRow < boxSize; boxRow++)
+            {
+                for (int boxCol = 0; boxCol < boxSize; boxCol++)
+                {
+                    bool[] seen = new bool[size + 1];
+                    int startRow = boxRow * boxSize;
+                    int startCol = boxCol * boxSize;
+
+                    for (int r = 0; r < boxSize; r++)
                     {
-                        for (int j = 0; j < 3; j++)
+                        for (int c = 0; c < boxSize; c++)
                         {
-                            int row = startRow + i;
-                            int col = startCol + j;
-
-                            int value = board.GetCell(row, col);
-                            if (value == 0) continue;
-
-                            if (seen[value]) return false;
-                            seen[value] = true;
+                            int val = board.GetCell(startRow + r, startCol + c);
+                            if (val == 0) continue;
+                            if (seen[val]) return false;
+                            seen[val] = true;
                         }
                     }
                 }
             }
+
             return true;
         }
-        public bool IsValid(SudokuBoard board)
-        {
-            return RowCheck(board)
-                && ColumnCheck(board)
-                && BoxCheck(board);
-        }
-
     }
 }

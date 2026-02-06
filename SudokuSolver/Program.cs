@@ -1,32 +1,38 @@
 ﻿using System;
 using System.Diagnostics;
 
-
 namespace SudokuSolver
 {
     internal class Program
     {
+        private const int BoardSize = 9;
+
         static void Main(string[] args)
         {
             BoardPrinter boardPrinter = new BoardPrinter();
-            SudokuParser parser = new SudokuParser();
+            SudokuParser parser = new SudokuParser(BoardSize);
             SudokuValidator validator = new SudokuValidator();
-            SudokuSolver solver = new SudokuSolver();
+            GenericSudokuSolver solver = new GenericSudokuSolver(BoardSize);
+
+            int inputLength = BoardSize * BoardSize;
 
             while (true)
             {
-                Console.WriteLine("Enter sudoku string (81 chars) or 'exit':");
+                Console.WriteLine($"\n==========================================");
+                Console.WriteLine($"Enter sudoku string ({inputLength} digits) or 'exit':");
+
                 string input = Console.ReadLine();
 
+                if (string.IsNullOrWhiteSpace(input)) continue;
+                if (input.ToLower() == "exit") break;
+
+                if (input.Length != inputLength)
+                {
+                    Console.WriteLine($"Error: Expected {inputLength} digits, got {input.Length}.");
+                    continue;
+                }
 
                 Stopwatch sw = Stopwatch.StartNew();
-
-
-                if (input == null)
-                    continue;
-
-                if (input.ToLower() == "exit")
-                    break;
 
                 try
                 {
@@ -37,34 +43,31 @@ namespace SudokuSolver
                         Console.WriteLine("Board is invalid.");
                         continue;
                     }
+
                     Console.WriteLine("Original board:");
                     boardPrinter.PrintBoard(board);
 
-                    Console.WriteLine();
-                    Console.WriteLine("================================");
-                    Console.WriteLine();
+                    int[] flatBoard = board.GetFlatArray();
+                    bool solved = solver.Solve(flatBoard);
 
-                    bool solved = solver.Solve(board);
-
-                    if (!solved)
+                    if (solved)
+                    {
+                        board.UpdateFromFlatArray(flatBoard);
+                        Console.WriteLine("\nSolved board:");
+                        boardPrinter.PrintBoard(board);
+                    }
+                    else
                     {
                         Console.WriteLine("Board has no solution.");
-                        continue;
                     }
-
-                    Console.WriteLine("Solved board:");
-                    boardPrinter.PrintBoard(board);
-
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Error: {ex.Message}");
                 }
 
-                Console.WriteLine();
                 sw.Stop();
-                Console.WriteLine($"{sw.Elapsed.TotalSeconds} sec");
-                Console.WriteLine();
+                Console.WriteLine($"Time: {sw.Elapsed.TotalSeconds:F4} sec");
             }
         }
     }

@@ -1,34 +1,33 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SudokuSolver
 {
     internal class BoardPrinter
     {
-            
-           public void PrintBoard(SudokuBoard board)
+        public void PrintBoard(SudokuBoard board)
         {
-            for (int row = 0; row < 9; row++)
-            {
-                if (row % 3 == 0 && row != 0)
-                    Console.WriteLine("------+-------+------");
+            int size = board.Size;
+            int boxSize = board.BoxSize;
 
-                for (int col = 0; col < 9; col++)
+            string horizontalLine = new string('-', (size * 2) + (size / boxSize) * 2);
+
+            for (int row = 0; row < size; row++)
+            {
+                if (row % boxSize == 0 && row != 0)
+                    Console.WriteLine(horizontalLine);
+
+                for (int col = 0; col < size; col++)
                 {
-                    if (col % 3 == 0 && col != 0)
+                    if (col % boxSize == 0 && col != 0)
                         Console.Write("| ");
 
                     int value = board.GetCell(row, col);
+
                     Console.Write(value == 0 ? ". " : value + " ");
                 }
 
                 Console.WriteLine();
             }
         }
-
     }
-
 }
