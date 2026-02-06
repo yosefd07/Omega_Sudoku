@@ -5,6 +5,10 @@ namespace SudokuSolver
     internal class BoardPrinter
     {
         public void PrintBoard(SudokuBoard board)
+        /// Prints the given Sudoku board to the console.
+        /// Empty cells (value 0) are displayed as dots (.),
+        /// and lines are drawn to separate Sudoku sub-boxes.
+        
         {
             int size = board.Size;
             int boxSize = board.BoxSize;

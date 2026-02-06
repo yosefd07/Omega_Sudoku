@@ -6,6 +6,7 @@ namespace SudokuSolver
     internal class Program
     {
         private const int BoardSize = 9;
+        //choosing the sudoku kind you want to play
 
         static void Main(string[] args)
         {

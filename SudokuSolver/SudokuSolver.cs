@@ -2,8 +2,14 @@
 
 namespace SudokuSolver
 {
+  
     public class GenericSudokuSolver
     {
+        /// A generic and efficient Sudoku solver that works with boards
+        /// of any valid size (4x4, 9x9, 16x16, etc.).
+        /// Uses bitmasking and backtracking with heuristics
+        /// to efficiently solve the puzzle.
+        
         private int _size;
         private int _boxSize;
         private int _totalCells;
@@ -19,6 +25,7 @@ namespace SudokuSolver
 
         public GenericSudokuSolver(int size)
         {
+            /// Creates a new GenericSudokuSolver for a given board size.
             _size = size;
             _boxSize = (int)Math.Sqrt(size);
 
@@ -34,6 +41,7 @@ namespace SudokuSolver
 
         private void InitializeMemory()
         {
+            /// Initializes internal arrays and lookup tables used by the solver.
             _rows = new int[_size];
             _cols = new int[_size];
             _boxes = new int[_size];
@@ -56,6 +64,8 @@ namespace SudokuSolver
         }
 
         public bool Solve(int[] inputBoard)
+        /// Solves the given Sudoku board in-place.
+        /// True if a solution was found; false otherwise.
         {
             if (inputBoard.Length != _totalCells)
                 throw new ArgumentException($"Board must have {_totalCells} cells");
@@ -95,8 +105,9 @@ namespace SudokuSolver
             return false;
         }
 
-        private bool SolveRecursive()
-        {
+        private bool SolveRecursive() { 
+          /// Recursive backtracking solver using the
+          /// "minimum remaining values" heuristic.
             int bestIdx = -1;
             int minOptions = _size + 1;
             int bestMask = 0;
@@ -156,6 +167,7 @@ namespace SudokuSolver
         }
 
         private int CountSetBits(int n)
+        /// Counts the number of set bits (1s) in an integer.
         {
             int count = 0;
             while (n > 0)

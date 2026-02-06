@@ -4,6 +4,15 @@
     {
         public bool IsValid(SudokuBoard board)
         {
+            /// Checks whether the given Sudoku board is valid.
+            /// A board is considered valid if:
+            /// - Each row contains unique non-zero numbers.
+            /// - Each column contains unique non-zero numbers.
+            /// - Each sub-box contains unique non-zero numbers.
+            /// Empty cells (value 0) are ignored.
+            /// True if the board is valid according to Sudoku rules;
+            /// false if any rule is violated.
+            
             int size = board.Size;
             int boxSize = board.BoxSize;
 
